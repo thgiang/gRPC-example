@@ -56,7 +56,9 @@ export class HeroController implements OnModuleInit {
 
     const onNext = async (heroById: HeroById) => {
       //const item = this.items.find(({id}) => id === heroById.id)
-      this.promises.push(this.userServiceGetUserById(heroById.id))
+      this.promises.push(this.userServiceGetUserById(heroById.id).then((item) => {
+        hero$.next(item)
+      }))
     };
 
     const onComplete = () => {
@@ -80,7 +82,7 @@ export class HeroController implements OnModuleInit {
     return new Promise(resolve => {
       setTimeout(() => {
         resolve(this.items.find(({id}) => id === heroId))
-      }, 3000);
+      }, 1000);
     });
   }
 }
