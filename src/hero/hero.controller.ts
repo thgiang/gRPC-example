@@ -49,19 +49,25 @@ export class HeroController implements OnModuleInit {
     return await this.userServiceGetUserById(data.id)
   }
 
+  private promises = [];
   @GrpcStreamMethod('HeroService')
   findMany(data$: Observable<HeroById>): Observable<Hero> {
     const hero$ = new Subject<Hero>();
 
     const onNext = async (heroById: HeroById) => {
-
-      // TODO: Nếu dòng này dùng await (bỏ comment dòng dưới) sẽ ko ra data
-      const item = this.items.find(({id}) => id === heroById.id)
-      //const item = await this.userServiceGetUserById(heroById.id)
-
-      hero$.next(item);
+      //const item = this.items.find(({id}) => id === heroById.id)
+      this.promises.push(this.userServiceGetUserById(heroById.id))
     };
-    const onComplete = () => hero$.complete();
+
+    const onComplete = () => {
+      Promise.all(this.promises)
+      .then(() => {
+        // Clear promises
+        this.promises = []
+        hero$.complete()
+      })
+    }
+
     data$.subscribe({
       next: onNext,
       complete: onComplete,
